@@ -1,6 +1,6 @@
 plugins {
-    id 'application'
     id 'java'
+    id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.14'
 }
 
@@ -17,20 +17,18 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
-    implementation 'org.apache.logging.log4j:log4j-core:2.23.1'
-    implementation 'org.apache.logging.log4j:log4j-api:2.23.1'
+    implementation 'org.controlsfx:controlsfx:11.2.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
 
-    implementation 'io.rest-assured:rest-assured:5.4.0'
+    implementation 'io.rest-assured:rest-assured:5.3.1'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
-    testImplementation 'org.mockito:mockito-core:5.5.0'
-    testImplementation 'org.mockito:mockito-junit-jupiter:5.5.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.21.0'
+    implementation 'org.apache.logging.log4j:log4j-api:2.21.0'
 }
 
 
 javafx {
-    version = "17.0.10"
+    version = '20'
     modules = [ 'javafx.controls', 'javafx.fxml' ]
 }
 
@@ -49,3 +47,28 @@ tasks.withType(Javadoc) {
     options.version = true
     options.links("https://docs.oracle.com/en/java/javase/17/docs/api/")
 }
+
+
+tasks.register('fatJar', Jar) {
+
+    group = 'build'
+    archiveClassifier.set('all')
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    manifest {
+        attributes(
+                'Main-Class': 'org.example.MainApp'
+        )
+    }
+
+    from(sourceSets.main.output)
+
+    dependsOn(configurations.runtimeClasspath)
+
+    from {
+        configurations.runtimeClasspath
+                .findAll { it.name.endsWith('jar') }
+                .collect { zipTree(it) }
+    }
+}
+
